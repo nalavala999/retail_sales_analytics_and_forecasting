@@ -1,0 +1,14 @@
+version: 2
+
+sources:
+  - name: source_bronze                          
+    database: retail_sales_analytics_and_forecasting   
+    schema: bronze                       
+    tables:
+      - name: superstore
+      
+  - name: silver                          
+    database: retail_sales_analytics_and_forecasting   
+    schema: silver                        
+    tables:
+      - name: superstore_clean

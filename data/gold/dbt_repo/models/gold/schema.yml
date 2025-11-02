@@ -1,0 +1,56 @@
+version: 2
+
+models:
+  - name: dim_date
+    description: "Date dimension with integer SK generated via row_number()."
+    columns:
+      - name: date_sk
+        tests: [not_null, unique]
+      - name: date
+        tests: [not_null, unique]
+
+  - name: dim_customer
+    description: "Customer dimension; SK via row_number() on stable hash."
+    columns:
+      - name: customer_sk
+        tests: [not_null, unique]
+      - name: customer_id
+        tests: [not_null]
+
+  - name: dim_product
+    description: "Product dimension; SK via row_number() on stable hash."
+    columns:
+      - name: product_sk
+        tests: [not_null, unique]
+      - name: product_id
+        tests: [not_null]
+
+  - name: dim_region
+    description: "Region/Geo dimension; SK via row_number() on stable hash."
+    columns:
+      - name: region_sk
+        tests: [not_null, unique]
+
+  - name: dim_order
+    description: "Order header; SK via row_number() on stable hash."
+    columns:
+      - name: order_sk
+        tests: [not_null, unique]
+      - name: order_id
+        tests: [not_null, unique]
+
+  - name: fact_sales
+    description: "Line-grain fact with integer fact_sk and FKs to dims."
+    columns:
+      - name: fact_sk
+        tests: [not_null, unique]
+      - name: order_sk
+        tests: [not_null]
+      - name: customer_sk
+        tests: [not_null]
+      - name: product_sk
+        tests: [not_null]
+      - name: region_sk
+        tests: [not_null]
+      - name: order_date
+        tests: [not_null]
