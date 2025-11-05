@@ -1,208 +1,357 @@
-# Retail Sales Analytics & Forecasting
+# 🛒 Retail Sales Analytics & Forecasting
 
-**Author:** NAGAMALLESWARA RAO ALAVALA  
-**Date:** 11-02-2025
-
----
-
-## Table of Contents
-1. [Project Overview](#project-overview)
-2. [Architecture & Data Flow](#architecture--data-flow)
-3. [Data Lineage](#data-lineage)
-4. [Conceptual Mapping to Retail Tables](#conceptual-mapping-to-retail-tables)
-5. [Gold Layer Models](#gold-layer-models)
-6. [ETL Summary](#etl-summary)
-7. [Power BI Deliverables](#power-bi-deliverables)
-8. [Next Steps (Planned)](#next-steps-planned)
-9. [Notes](#notes)
+**Repository:** `nalavala999/retail_sales_analytics_and_forecasting`  
+**Author:** Nagamalleswara Rao Alavala  
+**Date:** 2025-11-05  
+**License:** MIT
 
 ---
 
-## Project Overview
-
-This project implements an end-to-end **retail sales analytics** pipeline using the Superstore dataset (Orders, Customers, Products, Regions). It provides a clean **star schema** for BI, performance-oriented **pre-aggregations**, and foundations for **forecasting** and a **Gen-AI chatbot**.
-
-**Tech stack**
-- **Databricks**: Medallion architecture (Bronze, Silver)  
-- **dbt**: Gold dimensional models (dims, facts, views, aggs)  
-- **Power BI**: Dashboards (sales trend, profit heatmap, customer analysis)  
-- **(Planned)** ML forecasting (next-month sales) & Gen-AI Q&A
-
-**Goal**: Deliver trustworthy, fast, and explainable retail insights across **regions**, **products**, and **customers**.
-
----
-
-## 🧩 Architecture & Data Flow
-
-### 🔹 Bronze (Raw)
-- **Schema:** `bronze`
-- **Table:** `superstore` (raw CSV → Delta)
-- **Purpose:** Immutable landing of the Kaggle Superstore dataset
-
-### 🔹 Silver (Clean)
-- **Schema:** `silver`
-- **Table:** `superstore_clean`
-- **Purpose:** Typed, trimmed, deduped order lines + derived fields (`order_ym`, `ship_days`)
-
-### 🔹 Gold (Analytics)
-- **Schema:** `gold`
-- **dbt models:** Dimensions, fact table, views, and pre-aggregations for BI
+## 📘 Table of Contents
+1. [Project Overview](#project-overview)  
+2. [Architecture & Data Flow](#architecture--data-flow)  
+3. [Data Lineage](#data-lineage)  
+4. [Conceptual Mapping to Retail Tables](#conceptual-mapping-to-retail-tables)  
+5. [Gold Layer Models](#gold-layer-models)  
+6. [ETL Summary](#etl-summary)  
+7. [Power BI Deliverables](#power-bi-deliverables)  
+8. [Machine Learning Models](#machine-learning-models)  
+9. [Gen-AI Chatbot](#gen-ai-chatbot)  
+10. [CI/CD & Quality](#cicd--quality)  
+11. [Repo Structure](#repo-structure)  
+12. [How to Run (Quickstart)](#how-to-run-quickstart)  
+13. [Troubleshooting](#troubleshooting)  
+14. [Next Steps](#next-steps)  
+15. [Dataset & Credits](#dataset--credits)
 
 ---
 
+## 🧩 Project Overview
+End-to-end **retail analytics and forecasting** pipeline built using the Kaggle *Superstore* dataset.  
+This solution models data through the **Medallion Architecture** (Bronze → Silver → Gold), powers **Power BI dashboards**, and includes **ML & Gen-AI** components.
+
+### Objectives
+- Design relational schema for Orders, Customers, Products, Regions, and SalesFacts  
+- Build ETL pipelines with **Databricks + dbt**  
+- Create dashboards for **sales trend, profit heatmap, customer analysis**  
+- Develop **ML models** for forecasting & profitability classification  
+- Build a **Gen-AI chatbot** to query sales data using natural language  
+
+---
+
+## 🧱 Architecture & Data Flow
+
+| Layer | Platform | Schema | Description |
+|-------|-----------|---------|-------------|
+| **Bronze** | Databricks | `bronze` | Raw CSV → Delta (immutable) |
+| **Silver** | Databricks | `silver` | Cleaned, typed, deduped data with derived fields |
+| **Gold** | dbt + Delta | `gold` | Dimensional models (dims, facts, aggs, views) |
+| **ML** | Databricks | `ml` | Feature engineering & model outputs |
+| **BI** | Power BI | — | Dashboards for visualization |
+| **AI** | LangChain + OpenAI | — | Natural Language Chatbot for query automation |
+
+---
 
 ## 🧭 Data Lineage
 
 ```mermaid
 graph TD
-  subgraph Bronze [Databricks - Bronze]
-    b_superstore["bronze.superstore"]
+  subgraph Bronze [Bronze - Databricks]
+    b1["bronze.superstore"]
   end
 
-  subgraph Silver [Databricks - Silver]
-    s_clean["silver.superstore_clean"]
+  subgraph Silver [Silver - Databricks]
+    s1["silver.superstore_clean"]
   end
 
-  subgraph Gold [dbt - Gold]
-    dim_date["gold.dim_date"]
-    dim_customer["gold.dim_customer"]
-    dim_product["gold.dim_product"]
-    dim_region["gold.dim_region"]
-    dim_order["gold.dim_order"]
-    fact_sales["gold.fact_sales"]
-    agg_mrp["gold.agg_monthly_region_product"]
-    agg_cl["gold.agg_customer_lifetime"]
-    agg_pp["gold.agg_product_perf"]
-    v_dims["gold.v_dim_*"]
-    v_fact["gold.v_fact_sales"]
+  subgraph Gold [Gold - dbt]
+    d_date["dim_date"]
+    d_customer["dim_customer"]
+    d_product["dim_product"]
+    d_region["dim_region"]
+    d_order["dim_order"]
+    f_sales["fact_sales"]
+    agg_mrp["agg_monthly_region_product"]
+    agg_cust["agg_customer_lifetime"]
   end
 
-  %% Bronze → Silver
-  b_superstore --> s_clean
+  subgraph ML [Machine Learning - Databricks]
+    m_train["ml.order_line_training"]
+    m_feat["ml.monthly_region_product_features"]
+    m_cls_out["ml.order_profit_score"]
+    m_fcst_out["gold.forecast_next_month"]
+  end
 
-  %% Silver → Dimensions
-  s_clean --> dim_customer
-  s_clean --> dim_product
-  s_clean --> dim_region
-  s_clean --> dim_order
-  s_clean --> dim_date
-  s_clean --> fact_sales
+  subgraph AI [Generative AI Chatbot]
+    bot["retail_sales_chatbot (LangChain + OpenAI)"]
+  end
 
-  %% Dimensions → Fact
-  dim_customer --> fact_sales
-  dim_product  --> fact_sales
-  dim_region   --> fact_sales
-  dim_order    --> fact_sales
-  dim_date     --> fact_sales
-
-  %% Facts → Aggregations / Views
-  fact_sales --> agg_mrp
-  fact_sales --> agg_cl
-  fact_sales --> agg_pp
-  dim_customer --> v_dims
-  dim_product  --> v_dims
-  dim_region   --> v_dims
-  dim_order    --> v_dims
-  fact_sales   --> v_fact
+  b1 --> s1
+  s1 --> f_sales
+  f_sales --> agg_mrp
+  f_sales --> agg_cust
+  agg_mrp --> m_feat
+  f_sales --> m_train
+  m_feat --> m_fcst_out
+  m_train --> m_cls_out
+  f_sales --> bot
+  agg_mrp --> bot
+  agg_cust --> bot
 ```
+
+---
 
 ## 🧠 Conceptual Mapping to Retail Tables
 
-| Conceptual Table | Implemented In                                           | Description                                                  |
-|------------------|-----------------------------------------------------------|--------------------------------------------------------------|
-| **Orders**       | `dim_order`, `fact_sales`                                 | Order header (dates, ship info) and line-level measures.     |
-| **Customers**    | `dim_customer`, `agg_customer_lifetime`                   | Customer details, segment, and lifetime value metrics.       |
-| **Products**     | `dim_product`, `agg_product_perf`                         | Product catalog with Category/Sub-Category hierarchy.        |
-| **Regions**      | `dim_region`, `agg_monthly_region_product`                | Country/Region/State/City/Postal rolled for reporting.       |
-| **SalesFacts**   | `fact_sales`                                              | Line-grain sales/profit/discount/quantity with FKs to dims.  |
+| Concept | Implemented In | Description |
+|----------|----------------|-------------|
+| **Orders** | `dim_order`, `fact_sales` | Order header, shipping info, and performance |
+| **Customers** | `dim_customer`, `agg_customer_lifetime` | Customer demographics & segment |
+| **Products** | `dim_product`, `agg_monthly_region_product` | Category hierarchy and sales contribution |
+| **Regions** | `dim_region`, `agg_monthly_region_product` | Geographical dimension for KPIs |
+| **SalesFacts** | `fact_sales` | Central fact table with all business measures |
+
+---
 
 ## 🧱 Gold Layer Models
 
-| Layer         | Model                          | Type  | Description                                                                 |
-|---------------|--------------------------------|-------|-----------------------------------------------------------------------------|
-| **Dimension** | `dim_date`                     | Table | Calendar table (year, quarter, month, YM, weekday, etc.).                   |
-| **Dimension** | `dim_customer`                 | Table | Customer attributes (name, segment).                                        |
-| **Dimension** | `dim_product`                  | Table | Product attributes (category, sub_category, name).                          |
-| **Dimension** | `dim_region`                   | Table | Geography rolled to reporting grain (country/region/state/city/postal).     |
-| **Dimension** | `dim_order`                    | Table | Order header, ship mode, `ship_days`, bucketed `ship_speed`.                |
-| **Fact**      | `fact_sales`                   | Table | Line-level sales metrics with FKs to dims.                                  |
-| **Agg**       | `agg_monthly_region_product`   | Table | Monthly Region × Category × Sub-Category (trends/heatmaps).                 |
-| **Agg**       | `agg_customer_lifetime`        | Table | First/last order, orders, units, sales, profit, margin by customer.         |
-| **Agg**       | `agg_product_perf`             | Table | Product rollups with orders, sales, profit, units, margin.                  |
-| **View**      | `v_dim_*`, `v_fact_sales`      | View  | Thin views over tables for governed BI access.                              |
+| Type | Model | Description |
+|------|--------|-------------|
+| **Dimension** | `dim_date` | Calendar (year, quarter, month, week) |
+| **Dimension** | `dim_customer` | Customer attributes & segments |
+| **Dimension** | `dim_product` | Product attributes & sub-categories |
+| **Dimension** | `dim_region` | Regional hierarchy |
+| **Fact** | `fact_sales` | Core metrics: Sales, Profit, Quantity, Discount |
+| **Agg** | `agg_monthly_region_product` | Monthly Region × Category × SubCategory metrics |
+| **Agg** | `agg_customer_lifetime` | Lifetime KPIs for each customer |
+| **View** | `v_fact_sales`, `v_dim_*` | BI consumption layer |
+| **ML Output** | `gold.forecast_next_month`, `ml.order_profit_score` | ML results for BI integration |
+
+---
 
 ## ⚙️ ETL Summary
 
-| Layer   | Platform    | Key Tasks                                                                                              |
-|---------|-------------|---------------------------------------------------------------------------------------------------------|
-| Bronze  | Databricks  | Load raw CSV → Delta (truncate & load for this project).                                                |
-| Silver  | Databricks  | Clean types, safe-cast numerics, trim text, dedupe, derive `order_ym`/`ship_days`.                      |
-| Gold    | dbt + Delta | Build dims/fact with **surrogate keys** via `row_number()` on stable hashes; create views & aggregations.|
-
-## 📊 Power BI Deliverables
-
-### Model
-Relate `fact_sales` to:
-- `dim_date` (via `order_date` → `date`)
-- `dim_customer` (via `customer_sk`)
-- `dim_product` (via `product_sk`)
-- `dim_region` (via `region_sk`)
-- `dim_order` (via `order_sk`)
-
-### Core Measures (DAX)
-- **Sales** = `SUM(fact_sales[sales])`
-- **Profit** = `SUM(fact_sales[profit])`
-- **Units** = `SUM(fact_sales[quantity])`
-- **Orders** = `DISTINCTCOUNT(fact_sales[order_id])`
-- **Margin %** = `DIVIDE([Profit], [Sales])`
-- **AOV** = `DIVIDE([Sales], [Orders])`
-- **Sales LY** = `CALCULATE([Sales], DATEADD(dim_date[date], -1, YEAR))`
-- **Sales YoY %** = `DIVIDE([Sales] - [Sales LY], [Sales LY])`
-- **Rolling 12M Sales** = `CALCULATE([Sales], DATESINPERIOD(dim_date[date], MAX(dim_date[date]), -12, MONTH))`
-
-### Pages
-**Overview**
-- KPI cards: Sales, Profit, Margin %, Orders, Units, AOV
-- Line: Monthly trend (Sales / Profit or Rolling 12M Sales)
-- Bar: Sales by Category
-- Map/Bar: Sales by Region
-- Slicers: Year/Month, Region, Category, Segment
-
-**Profitability**
-- Matrix/Heatmap: Region × Category (color by Margin % or Profit)
-- Bar: Top products by Profit (Top N)
-
-**Customers**
-- Table: Lifetime metrics (from `agg_customer_lifetime`) → First/Last Order, Orders, Units, Sales, Profit, Margin %
-- Bar: Sales by Segment
-- Slicer: Customer / Segment
-
-**Shipping**
-- Bar: Ship Mode vs Margin %
-- Column: Ship Speed Bucket vs Profit
-- Card: Avg Ship Days
+| Step | Task | Tools |
+|------|------|-------|
+| **1. Raw Ingestion** | Import CSVs from Kaggle → Bronze | Databricks COPY INTO |
+| **2. Data Cleaning** | Trim, cast types, remove nulls | PySpark |
+| **3. Transformation** | Enrich with derived metrics | Databricks SQL |
+| **4. Modeling** | Build Star Schema | dbt |
+| **5. Validation** | Run dbt tests (unique, not_null) | dbt |
+| **6. Delivery** | Power BI dashboards, ML, and Chatbot | Power BI + LangChain |
 
 ---
 
-## 🚀 Next Steps (Planned)
+## 📊 Power BI Analytics & Visualization  
 
-**Forecasting**
-- Train a regression model to predict **next-month sales** (overall or by Region × Category).
+### 🎯 Dashboard Pages Overview  
 
-**Classification**
-- Optional model to flag **profitable vs. risky orders**.
-
-**Gen-AI Chatbot**
-- Natural-language Q&A on the Gold layer (e.g., “Show sales in West for Q4 2017”).
-
-**CI/CD**
-- dbt tests in CI, automated deployments, and scheduled Power BI refresh.
+| Page | Purpose | Key Visuals |
+|------|----------|-------------|
+| **🏠 Executive Overview** | Executive summary of business KPIs | KPIs: Total Sales, Profit, Margin %, Orders, AOV |
+| **🌍 Region Performance** | Regional comparison & performance tracking | Map/Bar: Sales by Region, Profit by Region, Margin Heatmap |
+| **📦 Profitability & Mix** | Category-level profitability insights | Matrix: Region × Category (Profit, Margin%), Top N Products |
+| **👥 Customers** | Customer lifetime and segmentation insights | Table: LTV Metrics (Orders, Sales, Profit), Bar: Sales by Segment |
+| **🚚 Shipping & Service** | Shipping efficiency and delivery impact | Bar: Ship Mode vs Margin, Speed Bucket vs Profit, Avg Ship Days |
+| **📅 Date Trends** | Time-based trend analysis | Line: Monthly Sales, Profit, YoY Growth, Rolling 12M Sales |
 
 ---
 
-## 🧾 Notes
+### 🖼️ Dashboard Previews  
 
-- **Surrogate Keys**: Integer SKs via `row_number()` over stable hashes ensure deterministic keys for dims/fact.
-- **Testing**: dbt tests (`not_null`, `unique`, `relationships`) guard model integrity.
-- **Performance**: Use **Import** or **Composite** models in Power BI; **agg_*** tables accelerate common visuals.
-- **Governance**: Expose BI via `v_*` views when you need fine-grained permissions.
+#### 🏠 Executive Overview
+![Executive Overview](powerbi/assets/🏠Executive%20Overview%20.png)
+
+#### 🌍 Region Performance
+![Region Performance](powerbi/assets/🌍%20Region%20Performance.png)
+
+#### 📦 Profitability & Mix
+![Profitability & Mix](powerbi/assets/📦%20Profitability%20&%20Mix.png)
+
+#### 👥 Customers
+![Customers](powerbi/assets/👥Customers.png)
+
+#### 🚚 Shipping & Service
+![Shipping & Service](powerbi/assets/🚚Shipping%20&%20Service.png)
+
+#### 📅 Date Trends
+![Date Trends](powerbi/assets/📅Date%20Trends.png)
+
+---
+
+### 🧮 Key DAX Measures
+
+```DAX
+Total Sales = SUM(fact_sales[sales])
+Total Profit = SUM(fact_sales[profit])
+Total Orders = DISTINCTCOUNT(fact_sales[order_id])
+Units Sold = SUM(fact_sales[quantity])
+
+Margin % =
+DIVIDE([Total Profit], [Total Sales], 0)
+
+Average Order Value (AOV) =
+DIVIDE([Total Sales], [Total Orders], 0)
+
+Sales LY =
+CALCULATE([Total Sales], DATEADD(dim_date[date], -1, YEAR))
+
+Sales YoY % =
+DIVIDE([Total Sales] - [Sales LY], [Sales LY], 0)
+
+Rolling 12M Sales =
+CALCULATE([Total Sales], DATESINPERIOD(dim_date[date], MAX(dim_date[date]), -12, MONTH))
+
+Top Customer Sales =
+CALCULATE([Total Sales], TOPN(10, dim_customer, [Total Sales]))
+
+Average Ship Days =
+AVERAGE(dim_order[ship_days])
+
+
+---
+
+## 🤖 Machine Learning Models
+
+| Model | Input Table | Objective | Output Table |
+|--------|--------------|------------|---------------|
+| **Classification (Profitable Orders)** | `ml.order_line_training` | Predict if an order is profitable | `ml.order_profit_score` |
+| **Regression (Next-Month Sales Forecast)** | `ml.monthly_region_product_features` | Forecast next month’s sales per Region×Category | `gold.forecast_next_month` |
+
+> **Tools:** scikit-learn (pandas) — Logistic Regression, Linear/Gradient Boosting Regressors  
+> **Validation Metrics:** Accuracy, ROC-AUC (classification); MAE, RMSE, R², MAPE (regression)
+
+---
+
+## 🧠 Gen-AI Chatbot
+
+| Aspect | Description |
+|---------|-------------|
+| **Goal** | Enable business users to query retail insights conversationally |
+| **Framework** | LangChain + OpenAI (GPT-5) |
+| **Data Source** | Gold tables in Databricks SQL |
+| **Orchestration** | Python-based retrieval using SQL connectors |
+| **Features** | |
+| → Text-to-SQL translation | Natural language → SQL → Databricks results |
+| → Context memory | Multi-turn query understanding |
+| → Metrics lookup | Fetches key KPIs dynamically (sales, profit, YoY growth) |
+| → Power BI integration | Embed in dashboard for conversational analytics |
+
+**Example Queries**
+```
+"Show total sales in West region for 2017"
+"Compare profit margin between Technology and Furniture"
+"Which customer segment had highest growth last quarter?"
+"Forecast next month sales for South region"
+```
+
+**Implementation Folder**
+```
+chatbot/
+├── retail_chatbot.py          # LangChain pipeline
+├── sql_agent.py               # SQL query execution layer
+├── prompt_templates.py        # Custom prompts for retail queries
+└── requirements.txt           # Dependencies
+```
+
+---
+
+## 🧪 CI/CD & Quality
+
+- **dbt tests:** `unique`, `not_null`, `relationships`  
+- **Contracts:** schema enforcement on key tables  
+- **GitHub Actions:** auto-run dbt + ML pipelines (future)  
+- **Power BI refresh:** scheduled daily sync from Databricks  
+
+---
+
+## 📂 Repository Structure
+```
+📦 retail_sales_analytics_and_forecasting
+├── databricks/
+│   ├── bronze/
+│   ├── silver/
+│   ├── gold/
+│   └── ml_sql/
+├── dbt/
+│   ├── models/
+│   │   ├── gold/
+│   │   └── sources/
+│   └── dbt_project.yml
+├── ML Models/
+│   ├── notebooks/
+│   ├── nb01_profitable_orders_lr_sklearn.py
+│   ├── nb02_profitable_orders_rf_sklearn.py
+│   ├── nb03_next_month_sales_gbr_sklearn.py
+│   └── nb04_next_month_sales_linear_sklearn.py
+├── chatbot/
+│   ├── retail_chatbot.py
+│   ├── sql_agent.py
+│   └── prompt_templates.py
+├── powerbi/
+│   ├── Retail_Superstore.pbix
+│   └── assets/
+│       ├── overview.png
+│       ├── profitability.png
+│       ├── customers.png
+│       └── shipping.png
+├── LICENSE
+└── README.md
+```
+
+---
+
+## 🚀 How to Run (Quickstart)
+
+**1️⃣ Databricks**
+```bash
+# Ingest + Clean
+run bronze/superstore_ingest.py
+run silver/superstore_clean_transform.py
+```
+
+**2️⃣ dbt**
+```bash
+dbt deps
+dbt build --select path:dbt/models/gold
+```
+
+**3️⃣ ML (in Databricks notebooks)**
+- Run classification/regression notebooks in `/ML Models/notebooks/`
+- Output stored in `ml.order_profit_score` & `gold.forecast_next_month`
+
+**4️⃣ Chatbot**
+```bash
+pip install -r chatbot/requirements.txt
+python chatbot/retail_chatbot.py
+```
+
+**5️⃣ Power BI**
+- Connect to Databricks SQL endpoint (Gold schema)
+- Import measures and visuals for the dashboard
+
+---
+
+## 🛠️ Troubleshooting
+
+| Issue | Fix |
+|-------|-----|
+| Delta field merge errors (`order_date`, `ym`) | Cast to DATE before write |
+| `OneHotEncoder` sparse arg error | Use `sparse_output=False` |
+| NaN handling in sklearn | Add `SimpleImputer` to pipeline |
+| Large quantity/discount anomalies | Recheck join keys in `fact_sales` |
+
+---
+
+## 🔮 Next Steps
+- Integrate **chatbot responses directly into Power BI dashboards**
+- Add **RAG-based** architecture for question answering over aggregated metrics
+- Deploy **ML model endpoints** (Databricks REST or Azure ML)
+- Automate nightly dbt + ML model runs with GitHub Actions
+
+---
+
+## 📚 Dataset & Credits
+- **Dataset:** [Kaggle — Superstore Dataset](https://www.kaggle.com/datasets/vivek468/superstore-dataset-final)  
+- **Inspired by:** Healthcare Risk Prediction & Retail AI Analytics frameworks  
+- **Developed by:** Nagamalleswara Rao Alavala (2025)
