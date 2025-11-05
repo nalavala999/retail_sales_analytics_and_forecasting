@@ -207,9 +207,10 @@ CALCULATE([Total Sales], TOPN(10, dim_customer, [Total Sales]))
 
 Average Ship Days =
 AVERAGE(dim_order[ship_days])
-
+```
 
 ---
+
 
 ## 🤖 Machine Learning Models
 
