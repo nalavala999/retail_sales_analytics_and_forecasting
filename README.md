@@ -142,23 +142,72 @@ graph TD
 
 ---
 
-## 📊 Power BI Deliverables
+## 📊 Power BI Analytics & Visualization  
 
-**Dashboard Pages:**
-1. **Overview** — KPIs (Sales, Profit, Orders, Margin%)  
-2. **Profitability** — Region × Category heatmap, Top Products  
-3. **Customers** — Lifetime metrics, Sales by Segment  
-4. **Shipping** — Ship Mode & Speed Analysis  
+### 🎯 Dashboard Pages Overview  
 
-**Core DAX Measures**
+| Page | Purpose | Key Visuals |
+|------|----------|-------------|
+| **🏠 Executive Overview** | Executive summary of business KPIs | KPIs: Total Sales, Profit, Margin %, Orders, AOV |
+| **🌍 Region Performance** | Regional comparison & performance tracking | Map/Bar: Sales by Region, Profit by Region, Margin Heatmap |
+| **📦 Profitability & Mix** | Category-level profitability insights | Matrix: Region × Category (Profit, Margin%), Top N Products |
+| **👥 Customers** | Customer lifetime and segmentation insights | Table: LTV Metrics (Orders, Sales, Profit), Bar: Sales by Segment |
+| **🚚 Shipping & Service** | Shipping efficiency and delivery impact | Bar: Ship Mode vs Margin, Speed Bucket vs Profit, Avg Ship Days |
+| **📅 Date Trends** | Time-based trend analysis | Line: Monthly Sales, Profit, YoY Growth, Rolling 12M Sales |
+
+---
+
+### 🖼️ Dashboard Previews  
+
+#### 🏠 Executive Overview
+![Executive Overview](powerbi/assets/🏠Executive%20Overview%20.png)
+
+#### 🌍 Region Performance
+![Region Performance](powerbi/assets/🌍%20Region%20Performance.png)
+
+#### 📦 Profitability & Mix
+![Profitability & Mix](powerbi/assets/📦%20Profitability%20&%20Mix.png)
+
+#### 👥 Customers
+![Customers](powerbi/assets/👥Customers.png)
+
+#### 🚚 Shipping & Service
+![Shipping & Service](powerbi/assets/🚚Shipping%20&%20Service.png)
+
+#### 📅 Date Trends
+![Date Trends](powerbi/assets/📅Date%20Trends.png)
+
+---
+
+### 🧮 Key DAX Measures
+
 ```DAX
-Sales = SUM(fact_sales[sales])
-Profit = SUM(fact_sales[profit])
-Margin % = DIVIDE([Profit],[Sales],0)
-AOV = DIVIDE([Sales],DISTINCTCOUNT(fact_sales[order_id]))
+Total Sales = SUM(fact_sales[sales])
+Total Profit = SUM(fact_sales[profit])
+Total Orders = DISTINCTCOUNT(fact_sales[order_id])
+Units Sold = SUM(fact_sales[quantity])
+
+Margin % =
+DIVIDE([Total Profit], [Total Sales], 0)
+
+Average Order Value (AOV) =
+DIVIDE([Total Sales], [Total Orders], 0)
+
+Sales LY =
+CALCULATE([Total Sales], DATEADD(dim_date[date], -1, YEAR))
+
+Sales YoY % =
+DIVIDE([Total Sales] - [Sales LY], [Sales LY], 0)
+
 Rolling 12M Sales =
-CALCULATE([Sales], DATESINPERIOD(dim_date[date], MAX(dim_date[date]), -12, MONTH))
-```
+CALCULATE([Total Sales], DATESINPERIOD(dim_date[date], MAX(dim_date[date]), -12, MONTH))
+
+Top Customer Sales =
+CALCULATE([Total Sales], TOPN(10, dim_customer, [Total Sales]))
+
+Average Ship Days =
+AVERAGE(dim_order[ship_days])
+
 
 ---
 
