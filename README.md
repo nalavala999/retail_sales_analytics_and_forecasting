@@ -3,7 +3,7 @@
 **Repository:** `nalavala999/retail_sales_analytics_and_forecasting`  
 **Author:** Nagamalleswara Rao Alavala  
 **Date:** 2025-11-05  
-**License:** MIT
+
 
 ---
 
