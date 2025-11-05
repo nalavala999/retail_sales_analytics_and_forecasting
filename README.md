@@ -160,22 +160,22 @@ graph TD
 ### 🖼️ Dashboard Previews  
 
 #### 🏠 Executive Overview
-![Executive Overview](powerbi/assets/🏠Executive%20Overview%20.png)
+![Executive Overview](powerbi/DOCS/Executive_Overview.png)
 
 #### 🌍 Region Performance
-![Region Performance](powerbi/assets/🌍%20Region%20Performance.png)
+![Region Performance](powerbi/DOCS/Region_Performance.png)
 
 #### 📦 Profitability & Mix
-![Profitability & Mix](powerbi/assets/📦%20Profitability%20&%20Mix.png)
+![Profitability & Mix](powerbi/DOCS/ProfitabilityMix.png)
 
 #### 👥 Customers
-![Customers](powerbi/assets/👥Customers.png)
+![Customers](powerbi/DOCS/Customers.png)
 
 #### 🚚 Shipping & Service
-![Shipping & Service](powerbi/assets/🚚Shipping%20&%20Service.png)
+![Shipping & Service](powerbi/DOCS/ShippingService.png)
 
 #### 📅 Date Trends
-![Date Trends](powerbi/assets/📅Date%20Trends.png)
+![Date Trends](powerbi/DOCS/Date_Trends.png)
 
 ---
 
