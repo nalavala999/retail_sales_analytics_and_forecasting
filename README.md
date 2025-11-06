@@ -27,7 +27,7 @@
 ---
 
 ## 🧩 Project Overview
-End-to-end **retail analytics and forecasting** pipeline built using the Kaggle *Superstore* dataset.  
+End-to-end **retail sales analytics and forecasting** pipeline built using the Kaggle *Superstore* dataset.  
 This solution models data through the **Medallion Architecture** (Bronze → Silver → Gold), powers **Power BI dashboards**, and includes **ML & Gen-AI** components.
 
 ### Objectives
