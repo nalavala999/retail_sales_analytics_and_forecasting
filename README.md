@@ -3,7 +3,7 @@
 **Repository:** `nalavala999/retail_sales_analytics_and_forecasting`  
 **Author:** Nagamalleswara Rao Alavala  
 **Date:** 2025-11-05  
-**License:** MIT
+
 
 ---
 
@@ -27,7 +27,7 @@
 ---
 
 ## 🧩 Project Overview
-End-to-end **retail analytics and forecasting** pipeline built using the Kaggle *Superstore* dataset.  
+End-to-end **retail sales analytics and forecasting** pipeline built using the Kaggle *Superstore* dataset.  
 This solution models data through the **Medallion Architecture** (Bronze → Silver → Gold), powers **Power BI dashboards**, and includes **ML & Gen-AI** components.
 
 ### Objectives
@@ -207,9 +207,10 @@ CALCULATE([Total Sales], TOPN(10, dim_customer, [Total Sales]))
 
 Average Ship Days =
 AVERAGE(dim_order[ship_days])
-
+```
 
 ---
+
 
 ## 🤖 Machine Learning Models
 
