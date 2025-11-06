@@ -1,7 +1,5 @@
 # 🛒 Retail Sales Analytics & Forecasting  
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nalavala999/retail_sales_analytics_and_forecasting/blob/main/ML_Models/sales_forecast.ipynb)
-
 **Repository:** `nalavala999/retail_sales_analytics_and_forecasting`  
 **Author:** Nagamalleswara Rao Alavala  
 **Date:** 2025-11-07  
@@ -134,6 +132,8 @@ graph TD
 ---
 
 ## 🤖 Machine Learning Models (Google Colab)
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nalavala999/retail_sales_analytics_and_forecasting/blob/main/ML_Models/sales_forecast.ipynb)
 
 **Notebook:** `sales_forecast.ipynb`  
 **Dataset:** `Cleaned_Superstore.csv`
