@@ -2,7 +2,7 @@
 
 **Repository:** `nalavala999/retail_sales_analytics_and_forecasting`  
 **Author:** Nagamalleswara Rao Alavala  
-**Date:** 2025-11-07  
+**Date:** 2025-11-09  
 
 ---
 
@@ -15,7 +15,7 @@
 6. [ETL Summary](#etl-summary)  
 7. [Power BI Deliverables](#power-bi-deliverables)  
 8. [Machine Learning Models (Google Colab)](#machine-learning-models-google-colab)  
-9. [Gen-AI Chatbot (Planned)](#gen-ai-chatbot-planned)  
+9. [Gen-AI Chatbot (Retail Sales Assistant)](#gen-ai-chatbot-retail-sales-assistant)  
 10. [Repo Structure](#repo-structure)  
 11. [Next Steps](#next-steps)  
 12. [Dataset & Credits](#dataset--credits)  
@@ -24,7 +24,7 @@
 
 ## 🧩 Project Overview  
 An end-to-end **Retail Sales Analytics & Forecasting** pipeline built using the **Kaggle Superstore dataset**.  
-Implements the **Medallion Architecture (Bronze → Silver → Gold)** in **Databricks + dbt**, visualized via **Power BI**, and extended with **ML models in Google Colab**.
+Implements the **Medallion Architecture (Bronze → Silver → Gold)** in **Databricks + dbt**, visualized through **Power BI**, enhanced with **ML models in Google Colab**, and extended with a **Gen-AI Chatbot powered by Grok-3** for conversational analytics.
 
 ---
 
@@ -32,11 +32,12 @@ Implements the **Medallion Architecture (Bronze → Silver → Gold)** in **Data
 
 | Layer | Platform | Schema | Description |
 |-------|-----------|---------|-------------|
-| **Bronze** | Databricks | `bronze` | Raw data ingestion from CSV → Delta |
-| **Silver** | Databricks | `silver` | Cleaned, typed, deduplicated dataset |
-| **Gold** | dbt | `gold` | Star schema — dimensions, facts, and aggregates |
-| **ML** | Google Colab | — | ML models built using scikit-learn |
-| **BI** | Power BI | — | Interactive visualizations & KPI dashboards |
+| **Bronze** | Databricks | `bronze` | Raw CSV ingestion → Delta tables |
+| **Silver** | Databricks | `silver` | Cleaned + standardized records |
+| **Gold** | dbt | `gold` | Dimensional models (Facts + Dims + Aggregations) |
+| **ML** | Google Colab | — | scikit-learn models for profit classification & sales forecasting |
+| **BI** | Power BI | — | Interactive dashboards for business insights |
+| **AI** | Streamlit + LangChain + Grok-3 | — | Retail Sales Chatbot with natural-language querying |
 
 ---
 
@@ -55,6 +56,7 @@ graph TD
   H --> J["ML Models (Google Colab)"]
   C --> J
   J --> K["gold.forecast_next_month"]
+  K --> L["chatbot.sales_chatbot (Streamlit + Grok-3)"]
 ```
 
 ---
@@ -63,11 +65,11 @@ graph TD
 
 | Concept | Implemented In | Description |
 |----------|----------------|-------------|
-| **Orders** | `dim_order`, `fact_sales` | Order header, dates, and ship info |
-| **Customers** | `dim_customer`, `agg_customer_lifetime` | Customer attributes & segment |
-| **Products** | `dim_product`, `agg_monthly_region_product` | Category hierarchy & product performance |
-| **Regions** | `dim_region`, `agg_monthly_region_product` | Country/Region-level analysis |
-| **SalesFacts** | `fact_sales` | Line-grain sales, profit, quantity, discount |
+| **Orders** | `dim_order`, `fact_sales` | Order headers, dates, shipping modes |
+| **Customers** | `dim_customer`, `agg_customer_lifetime` | Customer attributes & lifetime metrics |
+| **Products** | `dim_product`, `agg_monthly_region_product` | Category hierarchy & sales performance |
+| **Regions** | `dim_region`, `agg_monthly_region_product` | Country/Region-level insights |
+| **SalesFacts** | `fact_sales` | Line-grain transactions with metrics |
 
 ---
 
@@ -77,12 +79,12 @@ graph TD
 |------|--------|-------------|
 | **Dimension** | `dim_date` | Calendar hierarchy |
 | **Dimension** | `dim_customer` | Customer profile & segment |
-| **Dimension** | `dim_product` | Product and sub-category details |
-| **Dimension** | `dim_region` | Region, state, city info |
-| **Fact** | `fact_sales` | Core business metrics |
-| **Aggregate** | `agg_monthly_region_product` | Region × Category × Month trends |
-| **Aggregate** | `agg_customer_lifetime` | Lifetime metrics (Orders, Profit, Margin%) |
-| **View** | `v_fact_sales`, `v_dim_*` | BI-ready thin views |
+| **Dimension** | `dim_product` | Product and subcategory metadata |
+| **Dimension** | `dim_region` | Region, state, city information |
+| **Fact** | `fact_sales` | Core sales metrics (Sales, Profit, Qty, Discount) |
+| **Aggregate** | `agg_monthly_region_product` | Region × Category × Month trend metrics |
+| **Aggregate** | `agg_customer_lifetime` | Lifetime KPIs (Orders, Profit, Margin%) |
+| **ML Output** | `gold.forecast_next_month` | Regression results for forecasting |
 
 ---
 
@@ -90,12 +92,12 @@ graph TD
 
 | Step | Description | Tools |
 |------|--------------|-------|
-| 1️⃣ **Raw Ingestion** | Import CSVs → Bronze | Databricks COPY INTO |
-| 2️⃣ **Transformation** | Clean & normalize | PySpark |
-| 3️⃣ **Modeling** | Build dimensional schema | dbt |
-| 4️⃣ **Validation** | dbt tests (not_null, unique) | dbt |
-| 5️⃣ **Delivery** | Power BI dashboards | Power BI Service |
-| 6️⃣ **ML & AI** | Forecasting & chatbot modules | Google Colab + LangChain |
+| 1️⃣ **Raw Ingestion** | Import CSV → Bronze Delta | Databricks COPY INTO |
+| 2️⃣ **Transformation** | Cleaning & standardization | PySpark |
+| 3️⃣ **Modeling** | Star Schema via dbt | dbt |
+| 4️⃣ **Validation** | Schema + relationship tests | dbt tests |
+| 5️⃣ **Delivery** | Power BI dashboard build | Power BI Desktop |
+| 6️⃣ **ML & AI** | Forecasting and chatbot insights | Google Colab + Streamlit |
 
 ---
 
@@ -131,6 +133,7 @@ graph TD
 
 ---
 
+
 ## 🤖 Machine Learning Models (Google Colab)
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nalavala999/retail_sales_analytics_and_forecasting/blob/main/ML_Models/sales_forecast.ipynb)
@@ -141,40 +144,58 @@ graph TD
 | Model | Type | Algorithm | Metric | Result |
 |--------|------|------------|---------|---------|
 | **Profitable Orders Classifier** | Classification | Logistic Regression / Random Forest | Accuracy | ≈ 92–94 % |
-| **Next-Month Sales Forecast** | Regression | Linear & Gradient Boosting Regressor | R² | ≈ 0.78 |
+| **Next-Month Sales Forecast** | Regression | Linear / Gradient Boosting | R² | ≈ 0.78 |
 
-### Example Evaluation
-```python
-from sklearn.metrics import accuracy_score, roc_auc_score, r2_score, mean_absolute_error
-
-print("Accuracy:", accuracy_score(y_test, y_pred))
-print("ROC-AUC:", roc_auc_score(y_test, y_proba))
-print("R²:", r2_score(y_test, y_pred))
-print("MAE:", mean_absolute_error(y_test, y_pred))
-```
-
-**Observations:**  
-- Logistic Regression and Random Forest classified profitable orders with >90% accuracy.  
-- Gradient Boosting achieved strong correlation for forecasting next-month sales.  
-- Ship days, region, and discount were strong profit indicators.  
+**Highlights 📈**  
+- Identified key drivers: `discount`, `ship_days`, `region`  
+- Gradient Boosting showed strong correlation for forecasting  
+- Output visualizations highlighted top performing regions and categories  
 
 ---
 
-## 🧠 Gen-AI Chatbot (Planned)  
+## 🤖 Gen-AI Chatbot (Retail Sales Assistant)
 
-| Feature | Description |
-|----------|-------------|
-| **Goal** | Enable conversational insights from Gold tables |
-| **Framework** | LangChain + x.ai (Grok-3) |
-| **Data Source** | Databricks SQL / Delta Tables |
-| **Capabilities** | Text-to-SQL, Context Retrieval, Sales KPI Q&A |
+### Overview  
+A **Streamlit + LangChain + Grok-3** based chatbot that connects to **Databricks SQL Warehouse**, reads the Superstore dataset, builds FAISS embeddings for contextual retrieval, and answers natural language queries about sales, profit, and customers.
 
-**Sample Queries:**
+### ⚙️ Architecture  
+
+| Component | Description |
+|------------|-------------|
+| **Frontend** | Streamlit UI (`sales_chatbot.py`) |
+| **LLM** | x.ai Grok-3 API |
+| **Database** | Databricks SQL Warehouse (Gold Schema) |
+| **Vector Store** | FAISS + SentenceTransformers Embeddings |
+| **Framework** | LangChain for chunking & context retrieval |
+
+### 📦 Data Source  
+`retail_sales_analytics_and_forecasting.gold.fact_sales` joined with  
+`dim_region`, `dim_product`, `dim_customer`, `dim_order` for human-readable context.
+
+### 💬 Example Queries  
 ```
-"Show total sales in West region for 2017"
-"Compare profit margin between Furniture and Technology"
-"Which segment had highest YoY growth last quarter?"
+"Show total sales and profit in West region for 2017"
+"Compare Furniture and Technology sales by region"
+"Which customer segment had highest YoY growth?"
+"List top 5 most profitable customers in the South region"
+"Forecast next-month sales for Office Supplies category"
 ```
+
+### 🧾 .env Configuration
+```bash
+XAI_API_KEY="xai-XXXXXXXXXXXXXXXXXXXX"
+DATABRICKS_SERVER_HOSTNAME="adb-xxxxxx.azuredatabricks.net"
+DATABRICKS_HTTP_PATH="/sql/1.0/warehouses/xxxxxxx"
+DATABRICKS_ACCESS_TOKEN="dapi-XXXXXXXXXXXXXXXXXXXX"
+```
+
+### ▶️ Run Instructions
+```bash
+cd chatbot
+streamlit run sales_chatbot.py
+```
+
+When launched, Streamlit UI loads data from Databricks, builds the FAISS index, and allows you to query sales analytics in plain English.
 
 ---
 
@@ -199,8 +220,9 @@ retail_sales_analytics_and_forecasting/
 │       ├── Shipping_Service.png
 │       └── Date_Trends.png
 │
-├── chatbot/       # (Future Gen-AI module)
-│   └── retail_rag_chatbot.py
+├── chatbot/
+│   ├── .env
+│   └── sales_chatbot.py
 │
 └── README.md
 ```
@@ -208,14 +230,14 @@ retail_sales_analytics_and_forecasting/
 ---
 
 ## 🔮 Next Steps  
-- Integrate chatbot responses into Power BI dashboards.  
-- Automate ML retraining using GitHub Actions.  
-- Expand forecasting by region/category-level features.  
-- Add LSTM model for advanced time-series predictions.  
+- Add Power BI embedding for chatbot responses  
+- Extend LLM with retrieval-augmented generation (RAG)  
+- Automate daily data refresh and FAISS index rebuilds  
+- Deploy chatbot as Azure Web App or Streamlit Cloud  
 
 ---
 
 ## 📚 Dataset & Credits  
-- Dataset: [Kaggle — Superstore Dataset](https://www.kaggle.com/datasets/vivek468/superstore-dataset-final)  
-- Tools: Databricks, dbt, Power BI, Google Colab, scikit-learn  
-- Developed by: **Nagamalleswara Rao Alavala (2025)**  
+- **Dataset:** [Kaggle — Superstore Dataset](https://www.kaggle.com/datasets/vivek468/superstore-dataset-final)  
+- **Tools:** Databricks, dbt, Power BI, Google Colab, scikit-learn, Streamlit, LangChain, Grok-3  
+- **Developed by:** *Nagamalleswara Rao Alavala (2025)*  
