@@ -1,9 +1,8 @@
-# 🛒 Retail Sales Analytics & Forecasting
+# 🛒 Retail Sales Analytics & Forecasting  
 
 **Repository:** `nalavala999/retail_sales_analytics_and_forecasting`  
 **Author:** Nagamalleswara Rao Alavala  
-**Date:** 2025-11-05  
-
+**Date:** 2025-11-07  
 
 ---
 
@@ -15,150 +14,103 @@
 5. [Gold Layer Models](#gold-layer-models)  
 6. [ETL Summary](#etl-summary)  
 7. [Power BI Deliverables](#power-bi-deliverables)  
-8. [Machine Learning Models](#machine-learning-models)  
-9. [Gen-AI Chatbot](#gen-ai-chatbot)  
-10. [CI/CD & Quality](#cicd--quality)  
-11. [Repo Structure](#repo-structure)  
-12. [How to Run (Quickstart)](#how-to-run-quickstart)  
-13. [Troubleshooting](#troubleshooting)  
-14. [Next Steps](#next-steps)  
-15. [Dataset & Credits](#dataset--credits)
+8. [Machine Learning Models (Google Colab)](#machine-learning-models-google-colab)  
+9. [Gen-AI Chatbot (Planned)](#gen-ai-chatbot-planned)  
+10. [Repo Structure](#repo-structure)  
+11. [Next Steps](#next-steps)  
+12. [Dataset & Credits](#dataset--credits)  
 
 ---
 
-## 🧩 Project Overview
-End-to-end **retail sales analytics and forecasting** pipeline built using the Kaggle *Superstore* dataset.  
-This solution models data through the **Medallion Architecture** (Bronze → Silver → Gold), powers **Power BI dashboards**, and includes **ML & Gen-AI** components.
-
-### Objectives
-- Design relational schema for Orders, Customers, Products, Regions, and SalesFacts  
-- Build ETL pipelines with **Databricks + dbt**  
-- Create dashboards for **sales trend, profit heatmap, customer analysis**  
-- Develop **ML models** for forecasting & profitability classification  
-- Build a **Gen-AI chatbot** to query sales data using natural language  
+## 🧩 Project Overview  
+An end-to-end **Retail Sales Analytics & Forecasting** pipeline built using the **Kaggle Superstore dataset**.  
+Implements the **Medallion Architecture (Bronze → Silver → Gold)** in **Databricks + dbt**, visualized via **Power BI**, and extended with **ML models in Google Colab**.
 
 ---
 
-## 🧱 Architecture & Data Flow
+## 🧱 Architecture & Data Flow  
 
 | Layer | Platform | Schema | Description |
 |-------|-----------|---------|-------------|
-| **Bronze** | Databricks | `bronze` | Raw CSV → Delta (immutable) |
-| **Silver** | Databricks | `silver` | Cleaned, typed, deduped data with derived fields |
-| **Gold** | dbt + Delta | `gold` | Dimensional models (dims, facts, aggs, views) |
-| **ML** | Databricks | `ml` | Feature engineering & model outputs |
-| **BI** | Power BI | — | Dashboards for visualization |
-| **AI** | LangChain + OpenAI | — | Natural Language Chatbot for query automation |
+| **Bronze** | Databricks | `bronze` | Raw data ingestion from CSV → Delta |
+| **Silver** | Databricks | `silver` | Cleaned, typed, deduplicated dataset |
+| **Gold** | dbt | `gold` | Star schema — dimensions, facts, and aggregates |
+| **ML** | Google Colab | — | ML models built using scikit-learn |
+| **BI** | Power BI | — | Interactive visualizations & KPI dashboards |
 
 ---
 
-## 🧭 Data Lineage
+## 🧭 Data Lineage  
 
 ```mermaid
 graph TD
-  subgraph Bronze [Bronze - Databricks]
-    b1["bronze.superstore"]
-  end
-
-  subgraph Silver [Silver - Databricks]
-    s1["silver.superstore_clean"]
-  end
-
-  subgraph Gold [Gold - dbt]
-    d_date["dim_date"]
-    d_customer["dim_customer"]
-    d_product["dim_product"]
-    d_region["dim_region"]
-    d_order["dim_order"]
-    f_sales["fact_sales"]
-    agg_mrp["agg_monthly_region_product"]
-    agg_cust["agg_customer_lifetime"]
-  end
-
-  subgraph ML [Machine Learning - Databricks]
-    m_train["ml.order_line_training"]
-    m_feat["ml.monthly_region_product_features"]
-    m_cls_out["ml.order_profit_score"]
-    m_fcst_out["gold.forecast_next_month"]
-  end
-
-  subgraph AI [Generative AI Chatbot]
-    bot["retail_sales_chatbot (LangChain + OpenAI)"]
-  end
-
-  b1 --> s1
-  s1 --> f_sales
-  f_sales --> agg_mrp
-  f_sales --> agg_cust
-  agg_mrp --> m_feat
-  f_sales --> m_train
-  m_feat --> m_fcst_out
-  m_train --> m_cls_out
-  f_sales --> bot
-  agg_mrp --> bot
-  agg_cust --> bot
+  A["bronze.superstore"] --> B["silver.superstore_clean"]
+  B --> C["gold.fact_sales"]
+  B --> D["gold.dim_customer"]
+  B --> E["gold.dim_product"]
+  B --> F["gold.dim_region"]
+  B --> G["gold.dim_order"]
+  C --> H["gold.agg_monthly_region_product"]
+  C --> I["gold.agg_customer_lifetime"]
+  H --> J["ML Models (Google Colab)"]
+  C --> J
+  J --> K["gold.forecast_next_month"]
 ```
 
 ---
 
-## 🧠 Conceptual Mapping to Retail Tables
+## 🧠 Conceptual Mapping to Retail Tables  
 
 | Concept | Implemented In | Description |
 |----------|----------------|-------------|
-| **Orders** | `dim_order`, `fact_sales` | Order header, shipping info, and performance |
-| **Customers** | `dim_customer`, `agg_customer_lifetime` | Customer demographics & segment |
-| **Products** | `dim_product`, `agg_monthly_region_product` | Category hierarchy and sales contribution |
-| **Regions** | `dim_region`, `agg_monthly_region_product` | Geographical dimension for KPIs |
-| **SalesFacts** | `fact_sales` | Central fact table with all business measures |
+| **Orders** | `dim_order`, `fact_sales` | Order header, dates, and ship info |
+| **Customers** | `dim_customer`, `agg_customer_lifetime` | Customer attributes & segment |
+| **Products** | `dim_product`, `agg_monthly_region_product` | Category hierarchy & product performance |
+| **Regions** | `dim_region`, `agg_monthly_region_product` | Country/Region-level analysis |
+| **SalesFacts** | `fact_sales` | Line-grain sales, profit, quantity, discount |
 
 ---
 
-## 🧱 Gold Layer Models
+## 🧱 Gold Layer Models  
 
 | Type | Model | Description |
 |------|--------|-------------|
-| **Dimension** | `dim_date` | Calendar (year, quarter, month, week) |
-| **Dimension** | `dim_customer` | Customer attributes & segments |
-| **Dimension** | `dim_product` | Product attributes & sub-categories |
-| **Dimension** | `dim_region` | Regional hierarchy |
-| **Fact** | `fact_sales` | Core metrics: Sales, Profit, Quantity, Discount |
-| **Agg** | `agg_monthly_region_product` | Monthly Region × Category × SubCategory metrics |
-| **Agg** | `agg_customer_lifetime` | Lifetime KPIs for each customer |
-| **View** | `v_fact_sales`, `v_dim_*` | BI consumption layer |
-| **ML Output** | `gold.forecast_next_month`, `ml.order_profit_score` | ML results for BI integration |
+| **Dimension** | `dim_date` | Calendar hierarchy |
+| **Dimension** | `dim_customer` | Customer profile & segment |
+| **Dimension** | `dim_product` | Product and sub-category details |
+| **Dimension** | `dim_region` | Region, state, city info |
+| **Fact** | `fact_sales` | Core business metrics |
+| **Aggregate** | `agg_monthly_region_product` | Region × Category × Month trends |
+| **Aggregate** | `agg_customer_lifetime` | Lifetime metrics (Orders, Profit, Margin%) |
+| **View** | `v_fact_sales`, `v_dim_*` | BI-ready thin views |
 
 ---
 
-## ⚙️ ETL Summary
+## ⚙️ ETL Summary  
 
-| Step | Task | Tools |
-|------|------|-------|
-| **1. Raw Ingestion** | Import CSVs from Kaggle → Bronze | Databricks COPY INTO |
-| **2. Data Cleaning** | Trim, cast types, remove nulls | PySpark |
-| **3. Transformation** | Enrich with derived metrics | Databricks SQL |
-| **4. Modeling** | Build Star Schema | dbt |
-| **5. Validation** | Run dbt tests (unique, not_null) | dbt |
-| **6. Delivery** | Power BI dashboards, ML, and Chatbot | Power BI + LangChain |
+| Step | Description | Tools |
+|------|--------------|-------|
+| 1️⃣ **Raw Ingestion** | Import CSVs → Bronze | Databricks COPY INTO |
+| 2️⃣ **Transformation** | Clean & normalize | PySpark |
+| 3️⃣ **Modeling** | Build dimensional schema | dbt |
+| 4️⃣ **Validation** | dbt tests (not_null, unique) | dbt |
+| 5️⃣ **Delivery** | Power BI dashboards | Power BI Service |
+| 6️⃣ **ML & AI** | Forecasting & chatbot modules | Google Colab + LangChain |
 
 ---
 
-## 📊 Power BI Analytics & Visualization  
-
-### 🎯 Dashboard Pages Overview  
+## 📊 Power BI Deliverables  
 
 | Page | Purpose | Key Visuals |
 |------|----------|-------------|
-| **🏠 Executive Overview** | Executive summary of business KPIs | KPIs: Total Sales, Profit, Margin %, Orders, AOV |
-| **🌍 Region Performance** | Regional comparison & performance tracking | Map/Bar: Sales by Region, Profit by Region, Margin Heatmap |
-| **📦 Profitability & Mix** | Category-level profitability insights | Matrix: Region × Category (Profit, Margin%), Top N Products |
-| **👥 Customers** | Customer lifetime and segmentation insights | Table: LTV Metrics (Orders, Sales, Profit), Bar: Sales by Segment |
-| **🚚 Shipping & Service** | Shipping efficiency and delivery impact | Bar: Ship Mode vs Margin, Speed Bucket vs Profit, Avg Ship Days |
-| **📅 Date Trends** | Time-based trend analysis | Line: Monthly Sales, Profit, YoY Growth, Rolling 12M Sales |
+| 🏠 **Executive Overview** | Summary KPIs | Total Sales, Profit, Orders, AOV |
+| 🌍 **Region Performance** | Regional comparison | Map + Bar Charts |
+| 📦 **Profitability & Mix** | Category-level profitability | Matrix (Region × Category) |
+| 👥 **Customers** | Segment & LTV insights | Bar + Table Visuals |
+| 🚚 **Shipping & Service** | Operational efficiency | Ship Mode vs Profit |
+| 📅 **Date Trends** | Time-based trends | Line Charts – Monthly Sales/Profit |
 
----
-
-### 🖼️ Dashboard Previews  
-
+### 📸 Dashboard Previews  
 #### 🏠 Executive Overview
 ![Executive Overview](powerbi/DOCS/Executive_Overview.png)
 
@@ -179,180 +131,91 @@ graph TD
 
 ---
 
-### 🧮 Key DAX Measures
+## 🤖 Machine Learning Models (Google Colab)
 
-```DAX
-Total Sales = SUM(fact_sales[sales])
-Total Profit = SUM(fact_sales[profit])
-Total Orders = DISTINCTCOUNT(fact_sales[order_id])
-Units Sold = SUM(fact_sales[quantity])
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/nalavala999/retail_sales_analytics_and_forecasting/blob/main/ML_Models/sales_forecast.ipynb)
 
-Margin % =
-DIVIDE([Total Profit], [Total Sales], 0)
+**Notebook:** `sales_forecast.ipynb`  
+**Dataset:** `Cleaned_Superstore.csv`
 
-Average Order Value (AOV) =
-DIVIDE([Total Sales], [Total Orders], 0)
+| Model | Type | Algorithm | Metric | Result |
+|--------|------|------------|---------|---------|
+| **Profitable Orders Classifier** | Classification | Logistic Regression / Random Forest | Accuracy | ≈ 92–94 % |
+| **Next-Month Sales Forecast** | Regression | Linear & Gradient Boosting Regressor | R² | ≈ 0.78 |
 
-Sales LY =
-CALCULATE([Total Sales], DATEADD(dim_date[date], -1, YEAR))
+### Example Evaluation
+```python
+from sklearn.metrics import accuracy_score, roc_auc_score, r2_score, mean_absolute_error
 
-Sales YoY % =
-DIVIDE([Total Sales] - [Sales LY], [Sales LY], 0)
-
-Rolling 12M Sales =
-CALCULATE([Total Sales], DATESINPERIOD(dim_date[date], MAX(dim_date[date]), -12, MONTH))
-
-Top Customer Sales =
-CALCULATE([Total Sales], TOPN(10, dim_customer, [Total Sales]))
-
-Average Ship Days =
-AVERAGE(dim_order[ship_days])
+print("Accuracy:", accuracy_score(y_test, y_pred))
+print("ROC-AUC:", roc_auc_score(y_test, y_proba))
+print("R²:", r2_score(y_test, y_pred))
+print("MAE:", mean_absolute_error(y_test, y_pred))
 ```
 
----
-
-
-## 🤖 Machine Learning Models
-
-| Model | Input Table | Objective | Output Table |
-|--------|--------------|------------|---------------|
-| **Classification (Profitable Orders)** | `ml.order_line_training` | Predict if an order is profitable | `ml.order_profit_score` |
-| **Regression (Next-Month Sales Forecast)** | `ml.monthly_region_product_features` | Forecast next month’s sales per Region×Category | `gold.forecast_next_month` |
-
-> **Tools:** scikit-learn (pandas) — Logistic Regression, Linear/Gradient Boosting Regressors  
-> **Validation Metrics:** Accuracy, ROC-AUC (classification); MAE, RMSE, R², MAPE (regression)
+**Observations:**  
+- Logistic Regression and Random Forest classified profitable orders with >90% accuracy.  
+- Gradient Boosting achieved strong correlation for forecasting next-month sales.  
+- Ship days, region, and discount were strong profit indicators.  
 
 ---
 
-## 🧠 Gen-AI Chatbot
+## 🧠 Gen-AI Chatbot (Planned)  
 
-| Aspect | Description |
-|---------|-------------|
-| **Goal** | Enable business users to query retail insights conversationally |
-| **Framework** | LangChain + OpenAI (GPT-5) |
-| **Data Source** | Gold tables in Databricks SQL |
-| **Orchestration** | Python-based retrieval using SQL connectors |
-| **Features** | |
-| → Text-to-SQL translation | Natural language → SQL → Databricks results |
-| → Context memory | Multi-turn query understanding |
-| → Metrics lookup | Fetches key KPIs dynamically (sales, profit, YoY growth) |
-| → Power BI integration | Embed in dashboard for conversational analytics |
+| Feature | Description |
+|----------|-------------|
+| **Goal** | Enable conversational insights from Gold tables |
+| **Framework** | LangChain + x.ai (Grok-3) |
+| **Data Source** | Databricks SQL / Delta Tables |
+| **Capabilities** | Text-to-SQL, Context Retrieval, Sales KPI Q&A |
 
-**Example Queries**
+**Sample Queries:**
 ```
 "Show total sales in West region for 2017"
-"Compare profit margin between Technology and Furniture"
-"Which customer segment had highest growth last quarter?"
-"Forecast next month sales for South region"
-```
-
-**Implementation Folder**
-```
-chatbot/
-├── retail_chatbot.py          # LangChain pipeline
-├── sql_agent.py               # SQL query execution layer
-├── prompt_templates.py        # Custom prompts for retail queries
-└── requirements.txt           # Dependencies
+"Compare profit margin between Furniture and Technology"
+"Which segment had highest YoY growth last quarter?"
 ```
 
 ---
 
-## 🧪 CI/CD & Quality
-
-- **dbt tests:** `unique`, `not_null`, `relationships`  
-- **Contracts:** schema enforcement on key tables  
-- **GitHub Actions:** auto-run dbt + ML pipelines (future)  
-- **Power BI refresh:** scheduled daily sync from Databricks  
-
----
-
-## 📂 Repository Structure
+## 📂 Repo Structure  
 ```
-📦 retail_sales_analytics_and_forecasting
-├── databricks/
-│   ├── bronze/
-│   ├── silver/
-│   ├── gold/
-│   └── ml_sql/
-├── dbt/
-│   ├── models/
-│   │   ├── gold/
-│   │   └── sources/
-│   └── dbt_project.yml
-├── ML Models/
-│   ├── notebooks/
-│   ├── nb01_profitable_orders_lr_sklearn.py
-│   ├── nb02_profitable_orders_rf_sklearn.py
-│   ├── nb03_next_month_sales_gbr_sklearn.py
-│   └── nb04_next_month_sales_linear_sklearn.py
-├── chatbot/
-│   ├── retail_chatbot.py
-│   ├── sql_agent.py
-│   └── prompt_templates.py
+retail_sales_analytics_and_forecasting/
+│
+├── data/
+│   └── Cleaned_Superstore.csv
+│
+├── ML_Models/
+│   ├── Cleaned_Superstore.csv
+│   └── sales_forecast.ipynb
+│
 ├── powerbi/
-│   ├── Retail_Superstore.pbix
+│   ├── Retail_Sales.pbix
 │   └── assets/
-│       ├── overview.png
-│       ├── profitability.png
-│       ├── customers.png
-│       └── shipping.png
-├── LICENSE
+│       ├── Executive_Overview.png
+│       ├── Region_Performance.png
+│       ├── Profitability_Mix.png
+│       ├── Customers.png
+│       ├── Shipping_Service.png
+│       └── Date_Trends.png
+│
+├── chatbot/       # (Future Gen-AI module)
+│   └── retail_rag_chatbot.py
+│
 └── README.md
 ```
 
 ---
 
-## 🚀 How to Run (Quickstart)
-
-**1️⃣ Databricks**
-```bash
-# Ingest + Clean
-run bronze/superstore_ingest.py
-run silver/superstore_clean_transform.py
-```
-
-**2️⃣ dbt**
-```bash
-dbt deps
-dbt build --select path:dbt/models/gold
-```
-
-**3️⃣ ML (in Databricks notebooks)**
-- Run classification/regression notebooks in `/ML Models/notebooks/`
-- Output stored in `ml.order_profit_score` & `gold.forecast_next_month`
-
-**4️⃣ Chatbot**
-```bash
-pip install -r chatbot/requirements.txt
-python chatbot/retail_chatbot.py
-```
-
-**5️⃣ Power BI**
-- Connect to Databricks SQL endpoint (Gold schema)
-- Import measures and visuals for the dashboard
+## 🔮 Next Steps  
+- Integrate chatbot responses into Power BI dashboards.  
+- Automate ML retraining using GitHub Actions.  
+- Expand forecasting by region/category-level features.  
+- Add LSTM model for advanced time-series predictions.  
 
 ---
 
-## 🛠️ Troubleshooting
-
-| Issue | Fix |
-|-------|-----|
-| Delta field merge errors (`order_date`, `ym`) | Cast to DATE before write |
-| `OneHotEncoder` sparse arg error | Use `sparse_output=False` |
-| NaN handling in sklearn | Add `SimpleImputer` to pipeline |
-| Large quantity/discount anomalies | Recheck join keys in `fact_sales` |
-
----
-
-## 🔮 Next Steps
-- Integrate **chatbot responses directly into Power BI dashboards**
-- Add **RAG-based** architecture for question answering over aggregated metrics
-- Deploy **ML model endpoints** (Databricks REST or Azure ML)
-- Automate nightly dbt + ML model runs with GitHub Actions
-
----
-
-## 📚 Dataset & Credits
-- **Dataset:** [Kaggle — Superstore Dataset](https://www.kaggle.com/datasets/vivek468/superstore-dataset-final)  
-- **Inspired by:** Healthcare Risk Prediction & Retail AI Analytics frameworks  
-- **Developed by:** Nagamalleswara Rao Alavala (2025)
+## 📚 Dataset & Credits  
+- Dataset: [Kaggle — Superstore Dataset](https://www.kaggle.com/datasets/vivek468/superstore-dataset-final)  
+- Tools: Databricks, dbt, Power BI, Google Colab, scikit-learn  
+- Developed by: **Nagamalleswara Rao Alavala (2025)**  
